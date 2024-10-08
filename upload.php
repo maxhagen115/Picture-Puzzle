@@ -10,17 +10,11 @@ $tmp_name = $_FILES['file']['tmp_name'];
 $width = 800;
 $height = 800;
 
-if (isset($name)) 
-{
-    if (!empty($name)) 
-    {
-        if(move_uploaded_file($tmp_name,  "$uploads_dir/$name")){
-            
+if (isset($name)) {
+    if (!empty($name)) {
+        if (move_uploaded_file($tmp_name,  "$uploads_dir/$name")) {
         }
-       
     }
-   
-
 }
 
 $original = imagecreatefromjpeg("IMG/img/$name");
@@ -34,4 +28,3 @@ imagejpeg($resized, "./IMG/img/$name");
 $_SESSION['picture']  =  "./IMG/img/$name";
 $tegels = $_POST['dropdown'];
 header("Location: http://localhost/picturepuzzle/puzzle.php?tegels=$tegels");
-?>
