@@ -62,7 +62,7 @@ for ($i = 0; $i < $wortelTegels; $i++) {
 
   <nav class="w-full bg-white shadow-md py-2 px-4">
     <div class="flex justify-between items-center">
-      <a href="#" class="text-xl font-bold text-indigo-600">Puzzel</a>
+      <a href="#" id="confirmMainScreen" class="text-xl font-bold text-indigo-600">Puzzel</a>
       <a href="http://localhost/picturepuzzle/index.php" class="text-indigo-600 hover:text-indigo-800">
         Start Pagina
       </a>
@@ -121,6 +121,51 @@ for ($i = 0; $i < $wortelTegels; $i++) {
       </div>
     </div>
   </div>
+
+  <!-- Bevestigingsmodal -->
+  <div id="confirmationModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 hidden justify-center items-center">
+    <div class="bg-white p-6 rounded shadow-lg">
+      <p class="text-lg mb-4">Weet je zeker dat je terug wilt naar het hoofdscherm?</p>
+      <div class="flex justify-end gap-3">
+        <button id="cancelBtn" class="px-4 py-2 rounded bg-gray-300">Annuleren</button>
+        <button id="confirmBtn" class="px-4 py-2 rounded bg-indigo-600 text-white">Bevestigen</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const confirmLink = document.getElementById('confirmMainScreen');
+      const modal = document.getElementById('confirmationModal');
+      const confirmBtn = document.getElementById('confirmBtn');
+      const cancelBtn = document.getElementById('cancelBtn');
+
+      // Open modal
+      confirmLink.addEventListener('click', (e) => {
+        e.preventDefault(); // voorkom standaard gedrag
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      });
+
+      // Bevestiging knop event
+      confirmBtn.addEventListener('click', () => {
+        window.location.href = 'index.php';
+      });
+
+      // Annuleren knop event
+      cancelBtn.addEventListener('click', () => {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      });
+
+      // Sluit modal bij klikken buiten de modal
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.classList.add('hidden');
+          modal.classList.remove('flex');
+        }
+      });
+    });
+  </script>
 </body>
 
 <script>
