@@ -1,4 +1,9 @@
 <?php
+session_start();
+
+// Include configuration
+require_once 'config.php';
+
 $_SESSION['tegelkeuze']  =  "dropdown";
 $tegelskeuze4 = 4;
 $tegelskeuze9 = 9;

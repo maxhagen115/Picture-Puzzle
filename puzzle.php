@@ -1,13 +1,16 @@
 <?php
 session_start();
+
+// Include configuration
+require_once 'config.php';
+
 $picture = $_SESSION['picture'];
 $tegels = $_GET['tegels'];
 $wortelTegels = sqrt($tegels);
 
 // Create puzzle_slices directory if it doesn't exist
-$testDir = './puzzle_slices';
-if (!file_exists($testDir)) {
-    mkdir($testDir, 0777, true);
+if (!file_exists(PUZZLE_SLICES_DIR)) {
+    mkdir(PUZZLE_SLICES_DIR, 0777, true);
 }
 
 // Determine image type and load accordingly
@@ -67,7 +70,7 @@ for ($i = 0; $i < $wortelTegels; $i++) {
     $im2 = imagecrop($image, ['x' => $x, 'y' => $y, 'width' => $widthTile, 'height' => $heightTile]);
     if ($im2 !== FALSE) {
       $tegelTeller++;
-      $outputPath = "$testDir/$tegelTeller.jpg";
+      $outputPath = PUZZLE_SLICES_DIR . "/$tegelTeller.jpg";
       imagejpeg($im2, $outputPath, 90);
       imagedestroy($im2);
     }
@@ -106,7 +109,7 @@ imagedestroy($image);
   <div class="container mx-auto flex-grow py-2">
     <div class="flex justify-center mb-4 pt-4">
       <button class="bg-indigo-600 text-white px-3 py-1.5 rounded shadow hover:bg-indigo-700 transition"
-        onclick="window.location.href='http://localhost/picturepuzzle/puzzle.php?tegels=<?php echo $tegels ?>'">
+        onclick="window.location.href='puzzle.php?tegels=<?php echo $tegels ?>'">
         Reset
       </button>
     </div>

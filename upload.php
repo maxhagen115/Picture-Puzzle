@@ -1,13 +1,15 @@
 <?php
 session_start();
 
+// Include configuration
+require_once 'config.php';
+
 // Check if GD extension is enabled
 if (!extension_loaded('gd')) {
     die('Error: GD extension is not enabled. Please enable it in your php.ini file.');
 }
 
-$uploads_dir = 'C:\xampp\htdocs\picturepuzzle\IMG\img';
-$name = $_FILES['file']['name'];
+$name = sanitizeFileName($_FILES['file']['name']);
 $size = $_FILES['file']['size'];
 $type = $_FILES['file']['type'];
 $tmp_name = $_FILES['file']['tmp_name'];
@@ -17,9 +19,9 @@ $height = 800;
 
 if (isset($name)) {
     if (!empty($name)) {
-        if (move_uploaded_file($tmp_name,  "$uploads_dir/$name")) {
+        if (move_uploaded_file($tmp_name, UPLOAD_DIR . "/$name")) {
             // Get image info
-            $imagePath = "$uploads_dir/$name";
+            $imagePath = UPLOAD_DIR . "/$name";
             $data = getimagesize($imagePath);
             
             if ($data === false) {
@@ -67,8 +69,8 @@ if (isset($name)) {
             imagecopyresampled($resized, $original, 0, 0, 0, 0, $width, $height, $width_org, $height_org);
             
             // Save as JPEG
-            $outputPath = "./IMG/img/$name";
-            if (!imagejpeg($resized, $outputPath, 90)) {
+            $outputPath = UPLOAD_WEB_PATH . "/$name";
+            if (!imagejpeg($resized, UPLOAD_DIR . "/$name", 90)) {
                 die('Error: Could not save resized image.');
             }
             
@@ -78,7 +80,9 @@ if (isset($name)) {
             
             $_SESSION['picture'] = $outputPath;
             $tegels = $_POST['dropdown'];
-            header("Location: http://localhost/picturepuzzle/puzzle.php?tegels=$tegels");
+            
+            // Use relative URL instead of hardcoded localhost
+            header("Location: puzzle.php?tegels=$tegels");
             exit;
         } else {
             die('Error: Failed to upload file.');
