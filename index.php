@@ -17,20 +17,27 @@ $tegelskeuze16 = 16;
 
 <body class="bg-gray-100 flex items-center justify-center h-screen">
 
-  <div class="bg-white shadow-lg rounded-lg p-8 ">
-    <h2 class="text-2xl font-bold text-gray-700 mb-6">Maak een Puzzel</h2>
+  <div class="bg-white shadow-lg rounded-lg p-10 max-w-md w-full">
+    <h2 class="text-2xl font-bold text-gray-700 mb-8">Maak een Puzzel</h2>
 
-    <p class="mb-4 text-gray-600">Upload een foto en kies hoeveel stukjes je wilt dat de puzzel heeft.</p>
+    <p class="mb-8 text-gray-600 leading-relaxed">Upload een foto en kies hoeveel stukjes je wilt dat de puzzel heeft.</p>
 
-    <form action="upload.php" method="POST" enctype="multipart/form-data" class="space-y-6">
-      <div>
-        <label for="file" class="block text-sm font-medium text-gray-700 mb-1">Selecteer een foto:</label>
-        <input type="file" name="file" id="file" required class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border file:border-gray-300 file:text-sm file:font-semibold file:bg-gray-50 file:text-gray-700 hover:file:bg-gray-100">
+    <form action="upload.php" method="POST" enctype="multipart/form-data" class="space-y-8">
+      <div class="space-y-3">
+        <div class="mt-2">
+          <input type="file" name="file" id="file" required class="hidden">
+          <label for="file" class="w-full bg-indigo-600 text-white py-3 px-6 rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-200 font-semibold cursor-pointer inline-block text-center">
+            Foto voor puzzel
+          </label>
+          <div id="file-preview" class="mt-4 hidden flex justify-center">
+            <img id="preview-image" src="" alt="Preview" class="max-w-xs h-auto rounded-lg shadow-md max-h-32 object-contain">
+          </div>
+        </div>
       </div>
 
-      <div>
-        <label for="dropdown" class="block text-sm font-medium text-gray-700 mb-1">Puzzelstukjes:</label>
-        <select name="dropdown" id="dropdown" required class="block w-full mt-1 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+      <div class="space-y-3 pt-2">
+        <label for="dropdown" class="block text-sm font-medium text-gray-700 mb-2">Puzzelstukjes:</label>
+        <select name="dropdown" id="dropdown" required class="block w-full py-3 px-4 border-2 border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all duration-200">
           <option value="" disabled selected>Selecteer aantal stukjes</option>
           <option value="4">4</option>
           <option value="9">9</option>
@@ -39,8 +46,32 @@ $tegelskeuze16 = 16;
         </select>
       </div>
 
-      <button class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500" type="submit" name="submit">Maak Puzzel</button>
+      <div class="pt-4">
+        <button class="w-full bg-indigo-600 text-white py-3 px-6 rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-200 font-semibold" type="submit" name="submit">Maak Puzzel</button>
+      </div>
     </form>
   </div>
+
+  <script>
+    document.getElementById('file').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      const previewContainer = document.getElementById('file-preview');
+      const previewImage = document.getElementById('preview-image');
+      
+      if (file && file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+          previewImage.src = e.target.result;
+          previewContainer.classList.remove('hidden');
+        };
+        
+        reader.readAsDataURL(file);
+      } else {
+        previewContainer.classList.add('hidden');
+        previewImage.src = '';
+      }
+    });
+  </script>
 </body>
 </html>

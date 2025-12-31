@@ -3,7 +3,42 @@ session_start();
 $picture = $_SESSION['picture'];
 $tegels = $_GET['tegels'];
 $wortelTegels = sqrt($tegels);
-$image = imagecreatefromjpeg($picture);
+
+// Create puzzle_slices directory if it doesn't exist
+$testDir = './puzzle_slices';
+if (!file_exists($testDir)) {
+    mkdir($testDir, 0777, true);
+}
+
+// Determine image type and load accordingly
+$imageInfo = getimagesize($picture);
+if ($imageInfo === false) {
+    die('Error: Invalid image file.');
+}
+
+$mimeType = $imageInfo['mime'];
+switch ($mimeType) {
+    case 'image/jpeg':
+    case 'image/jpg':
+        $image = imagecreatefromjpeg($picture);
+        break;
+    case 'image/png':
+        $image = imagecreatefrompng($picture);
+        break;
+    case 'image/gif':
+        $image = imagecreatefromgif($picture);
+        break;
+    case 'image/webp':
+        $image = imagecreatefromwebp($picture);
+        break;
+    default:
+        die('Error: Unsupported image type.');
+}
+
+if ($image === false) {
+    die('Error: Could not load image.');
+}
+
 $height = imagesy($image);
 $width = imagesx($image);
 $heightTile = ($height / $wortelTegels);
@@ -23,24 +58,22 @@ for ($i = 0; $i < $wortelTegels; $i++) {
   $x = 0;
   if ($i > 0) {
     $y = $y + $heightTile;
-  } else {
-    $y = $y;
   }
   for ($k = 0; $k < $wortelTegels; $k++) {
     if ($k > 0) {
       $x = $x + $widthTile;
-    } else {
-      $x = $x;
     }
 
     $im2 = imagecrop($image, ['x' => $x, 'y' => $y, 'width' => $widthTile, 'height' => $heightTile]);
     if ($im2 !== FALSE) {
       $tegelTeller++;
-      imagejpeg($im2, "./test/$tegelTeller.jpg");
+      $outputPath = "$testDir/$tegelTeller.jpg";
+      imagejpeg($im2, $outputPath, 90);
       imagedestroy($im2);
     }
   }
 }
+imagedestroy($image);
 ?>
 <!DOCTYPE html>
 <html lang="nl">
@@ -55,28 +88,27 @@ for ($i = 0; $i < $wortelTegels; $i++) {
   <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/themes/semantic.min.css" />
   <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/themes/bootstrap.min.css" />
   <script src="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/alertify.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 
 
 <body class="bg-gray-100 h-screen flex flex-col overflow-hidden">
 
-  <nav class="w-full bg-white shadow-md py-2 px-4">
-    <div class="flex justify-between items-center">
+  <nav class="w-full bg-white shadow-md py-6">
+    <div class="container mx-auto flex justify-between items-center">
       <a href="#" id="confirmMainScreen" class="text-xl font-bold text-indigo-600">Puzzel</a>
-      <a href="http://localhost/picturepuzzle/index.php" class="text-indigo-600 hover:text-indigo-800">
+      <a href="#" id="confirmStartPagina" class="text-indigo-600 hover:text-indigo-800 text-lg font-medium">
         Start Pagina
       </a>
     </div>
   </nav>
 
   <div class="container mx-auto flex-grow py-2">
-    <div class="flex justify-between mb-4">
-      <div class="flex justify-center mb-6">
-        <button class="bg-indigo-600 text-white px-3 py-1.5 rounded shadow hover:bg-indigo-700 transition"
-          onclick="window.location.href='http://localhost/picturepuzzle/puzzle.php?tegels=<?php echo $tegels ?>'">
-          Reset
-        </button>
-      </div>
+    <div class="flex justify-center mb-4 pt-4">
+      <button class="bg-indigo-600 text-white px-3 py-1.5 rounded shadow hover:bg-indigo-700 transition"
+        onclick="window.location.href='http://localhost/picturepuzzle/puzzle.php?tegels=<?php echo $tegels ?>'">
+        Reset
+      </button>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-0">
@@ -111,7 +143,7 @@ for ($i = 0; $i < $wortelTegels; $i++) {
                 <?php for ($k = 0; $k < $wortelTegels; $k++) {
                   $imageTeller++; ?>
                   <td id="td<?php echo $random_array[$imageTeller - 1] ?>" class="border p-0" onclick="checker1(<?php echo $random_array[$imageTeller - 1] ?>)">
-                    <img id="id<?php echo $random_array[$imageTeller - 1] ?>" class="puzzle" src="./test/<?php echo $random_array[$imageTeller - 1] ?>.jpg" alt="" style="display: block; margin: auto;">
+                    <img id="id<?php echo $random_array[$imageTeller - 1] ?>" class="puzzle" src="./puzzle_slices/<?php echo $random_array[$imageTeller - 1] ?>.jpg" alt="" style="display: block; margin: auto;">
                   </td>
                 <?php } ?>
               </tr>
@@ -135,16 +167,21 @@ for ($i = 0; $i < $wortelTegels; $i++) {
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const confirmLink = document.getElementById('confirmMainScreen');
+      const confirmStartPagina = document.getElementById('confirmStartPagina');
       const modal = document.getElementById('confirmationModal');
       const confirmBtn = document.getElementById('confirmBtn');
       const cancelBtn = document.getElementById('cancelBtn');
 
-      // Open modal
-      confirmLink.addEventListener('click', (e) => {
+      // Open modal function
+      const openModal = (e) => {
         e.preventDefault(); // voorkom standaard gedrag
         modal.classList.remove('hidden');
         modal.classList.add('flex');
-      });
+      };
+
+      // Open modal for both links
+      confirmLink.addEventListener('click', openModal);
+      confirmStartPagina.addEventListener('click', openModal);
 
       // Bevestiging knop event
       confirmBtn.addEventListener('click', () => {
@@ -186,14 +223,54 @@ for ($i = 0; $i < $wortelTegels; $i++) {
         alertify.error('Foute plek');
         fail++;
       } else {
-        document.getElementById(id2).src = "./test/" + id1 + ".jpg";
+        document.getElementById(id2).src = "./puzzle_slices/" + id1 + ".jpg";
         document.getElementById("id" + id1).src = "";
         document.getElementById("td" + id1).onclick = "";
         alertify.success('Goede plek');
         teller++;
         if (teller === totalTegels) {
           alertify.success('Gefeliciteerd! Je hebt de puzzel voltooid!');
-          document.getElementById("check").disabled = false;
+          
+          // Trigger confetti celebration with delay to ensure it's visible
+          setTimeout(function() {
+            try {
+              // Check if confetti is available (try both window.confetti and global confetti)
+              var confettiFunc = window.confetti || (typeof confetti !== 'undefined' ? confetti : null);
+              
+              if (confettiFunc) {
+                // Main confetti burst
+                confettiFunc({
+                  particleCount: 200,
+                  spread: 100,
+                  origin: { y: 0.5 },
+                  colors: ['#4F46E5', '#7C3AED', '#EC4899', '#F59E0B', '#10B981', '#3B82F6']
+                });
+                
+                // Additional bursts from sides
+                setTimeout(() => {
+                  confettiFunc({ 
+                    particleCount: 100, 
+                    angle: 60, 
+                    spread: 70, 
+                    origin: { x: 0, y: 0.5 },
+                    colors: ['#4F46E5', '#7C3AED', '#EC4899', '#F59E0B', '#10B981']
+                  });
+                }, 300);
+                
+                setTimeout(() => {
+                  confettiFunc({ 
+                    particleCount: 100, 
+                    angle: 120, 
+                    spread: 70, 
+                    origin: { x: 1, y: 0.5 },
+                    colors: ['#4F46E5', '#7C3AED', '#EC4899', '#F59E0B', '#10B981']
+                  });
+                }, 600);
+              }
+            } catch (e) {
+              // Silently handle confetti errors
+            }
+          }, 500);
         }
       }
     }
